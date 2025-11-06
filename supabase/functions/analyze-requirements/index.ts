@@ -84,6 +84,18 @@ Genera entre 2-4 procesos principales, cada uno con 2-3 subprocesos, y cada subp
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Error de OpenRouter:', response.status, errorText);
+      // Propaga códigos de límite de tasa o falta de crédito con mensajes claros
+      if (response.status === 429 || response.status === 402) {
+        let message = `Error al llamar a OpenRouter: ${response.status}`;
+        try {
+          const parsed = JSON.parse(errorText);
+          message = parsed?.error?.message || message;
+        } catch (_) {}
+        return new Response(
+          JSON.stringify({ success: false, error: message }),
+          { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       throw new Error(`Error al llamar a OpenRouter: ${response.status}`);
     }
 
