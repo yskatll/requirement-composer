@@ -75,11 +75,31 @@ export const RequirementAnalyzer = () => {
       );
 
       if (functionError) {
-        throw functionError;
+        // Manejar errores de red/servidor
+        const errorMsg = functionError.message || 'Error desconocido';
+        
+        if (errorMsg.includes('non-2xx')) {
+          // Error HTTP del edge function
+          throw new Error(
+            'OpenRouter está temporalmente saturado o hubo un problema con el análisis. ' +
+            'Por favor, espera unos segundos e intenta nuevamente.'
+          );
+        }
+        
+        throw new Error(errorMsg);
       }
 
       if (!data.success) {
-        throw new Error(data.error || 'Error al analizar la especificación');
+        // Error desde el edge function con mensaje específico
+        const errorDetails = data.error || 'Error al analizar la especificación';
+        
+        if (data.retry_after_ms) {
+          throw new Error(
+            `${errorDetails} (sugerencia: espera ${Math.round(data.retry_after_ms / 1000)}s)`
+          );
+        }
+        
+        throw new Error(errorDetails);
       }
 
       setResults(data.data);
@@ -88,7 +108,7 @@ export const RequirementAnalyzer = () => {
       console.error('Error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
       setError(errorMessage);
-      toast.error(`Error: ${errorMessage}`);
+      toast.error(`Error en el análisis: ${errorMessage}`);
     } finally {
       setIsAnalyzing(false);
     }
