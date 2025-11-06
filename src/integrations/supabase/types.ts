@@ -14,7 +14,106 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      caso_uso: {
+        Row: {
+          actor_principal: string | null
+          created_at: string | null
+          criterios_de_aceptacion: string | null
+          descripcion: string | null
+          id_caso_uso: number
+          id_subproceso: number
+          nombre: string
+          postcondiciones: string | null
+          precondiciones: string | null
+          tipo_caso_uso: number | null
+        }
+        Insert: {
+          actor_principal?: string | null
+          created_at?: string | null
+          criterios_de_aceptacion?: string | null
+          descripcion?: string | null
+          id_caso_uso?: number
+          id_subproceso: number
+          nombre: string
+          postcondiciones?: string | null
+          precondiciones?: string | null
+          tipo_caso_uso?: number | null
+        }
+        Update: {
+          actor_principal?: string | null
+          created_at?: string | null
+          criterios_de_aceptacion?: string | null
+          descripcion?: string | null
+          id_caso_uso?: number
+          id_subproceso?: number
+          nombre?: string
+          postcondiciones?: string | null
+          precondiciones?: string | null
+          tipo_caso_uso?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caso_uso_id_subproceso_fkey"
+            columns: ["id_subproceso"]
+            isOneToOne: false
+            referencedRelation: "subproceso"
+            referencedColumns: ["id_subproceso"]
+          },
+        ]
+      }
+      proceso: {
+        Row: {
+          created_at: string | null
+          descripcion: string | null
+          id_proceso: number
+          nombre: string
+        }
+        Insert: {
+          created_at?: string | null
+          descripcion?: string | null
+          id_proceso?: number
+          nombre: string
+        }
+        Update: {
+          created_at?: string | null
+          descripcion?: string | null
+          id_proceso?: number
+          nombre?: string
+        }
+        Relationships: []
+      }
+      subproceso: {
+        Row: {
+          created_at: string | null
+          descripcion: string | null
+          id_proceso: number
+          id_subproceso: number
+          nombre: string
+        }
+        Insert: {
+          created_at?: string | null
+          descripcion?: string | null
+          id_proceso: number
+          id_subproceso?: number
+          nombre: string
+        }
+        Update: {
+          created_at?: string | null
+          descripcion?: string | null
+          id_proceso?: number
+          id_subproceso?: number
+          nombre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subproceso_id_proceso_fkey"
+            columns: ["id_proceso"]
+            isOneToOne: false
+            referencedRelation: "proceso"
+            referencedColumns: ["id_proceso"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
