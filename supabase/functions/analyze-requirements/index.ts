@@ -65,7 +65,7 @@ async function callOpenRouter(model: string, messages: any[], apiKey: string) {
       model,
       messages,
       temperature: 0.5,
-      max_tokens: 2500,
+      max_tokens: 6000, // Aumentado para permitir respuestas completas
     }),
   });
 
@@ -139,6 +139,14 @@ async function analyzeWithFallback(messages: any[], apiKey: string) {
 function parseAIResponse(content: string) {
   let cleanContent = content.trim();
   
+  console.log(`Parsing AI response (${cleanContent.length} chars)`);
+  
+  // Verificar que no esté truncado (debe terminar con })
+  if (!cleanContent.endsWith('}') && !cleanContent.endsWith('}\n')) {
+    console.error('⚠️ Respuesta truncada detectada. Últimos 100 chars:', cleanContent.slice(-100));
+    throw new Error('La respuesta de la IA está incompleta. Por favor, intenta con una especificación más breve o simplificada.');
+  }
+  
   // Remover bloques de código markdown
   if (cleanContent.includes('```')) {
     cleanContent = cleanContent.replace(/```json\n?/g, '').replace(/```\n?/g, '');
@@ -147,12 +155,14 @@ function parseAIResponse(content: string) {
   // Extraer desde primer { hasta último }
   const firstBrace = cleanContent.indexOf('{');
   const lastBrace = cleanContent.lastIndexOf('}');
-  if (firstBrace !== -1 && lastBrace !== -1) {
+  if (firstBrace !== -1 && lastBrace !== -1 && firstBrace < lastBrace) {
     cleanContent = cleanContent.substring(firstBrace, lastBrace + 1);
   }
   
   // Quitar comas colgantes
   cleanContent = cleanContent.replace(/,\s*([}\]])/g, '$1');
+  
+  console.log(`Cleaned content length: ${cleanContent.length} chars`);
   
   const parsed = JSON.parse(cleanContent);
   
@@ -160,6 +170,8 @@ function parseAIResponse(content: string) {
   if (!parsed.procesos || !Array.isArray(parsed.procesos)) {
     throw new Error('El modelo no devolvió la estructura esperada (falta array de procesos)');
   }
+  
+  console.log(`✓ Parsed successfully: ${parsed.procesos.length} procesos`);
   
   return parsed;
 }
