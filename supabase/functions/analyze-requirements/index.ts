@@ -16,21 +16,20 @@ serve(async (req) => {
     const { specification } = await req.json();
     console.log('Analizando especificación:', specification);
 
-    const openRouterApiKey = Deno.env.get('OPENROUTER_API_KEY');
-    if (!openRouterApiKey) {
-      throw new Error('OPENROUTER_API_KEY no está configurada');
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!lovableApiKey) {
+      throw new Error('LOVABLE_API_KEY no está configurada');
     }
 
-    // Llamar a OpenRouter API con un modelo gratuito
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    // Llamar a Lovable AI Gateway con Gemini
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openRouterApiKey}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://requirement-composer.lovable.app',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.0-flash-exp:free',
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system',
@@ -83,24 +82,25 @@ Genera entre 2-4 procesos principales, cada uno con 2-3 subprocesos, y cada subp
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Error de OpenRouter:', response.status, errorText);
-      // Propaga códigos de límite de tasa o falta de crédito con mensajes claros
-      if (response.status === 429 || response.status === 402) {
-        let message = `Error al llamar a OpenRouter: ${response.status}`;
-        try {
-          const parsed = JSON.parse(errorText);
-          message = parsed?.error?.message || message;
-        } catch (_) {}
+      console.error('Error de Lovable AI:', response.status, errorText);
+      // Manejo de límites de tasa y falta de créditos
+      if (response.status === 429) {
         return new Response(
-          JSON.stringify({ success: false, error: message }),
-          { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ success: false, error: 'Límite de tasa excedido. Por favor, intenta de nuevo en unos momentos.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      throw new Error(`Error al llamar a OpenRouter: ${response.status}`);
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Créditos insuficientes. Por favor, añade créditos en Settings → Workspace → Usage.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      throw new Error(`Error al llamar a Lovable AI: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('Respuesta de OpenRouter recibida');
+    console.log('Respuesta de Lovable AI recibida');
     
     const generatedContent = data.choices[0].message.content;
     console.log('Contenido generado:', generatedContent);
@@ -226,9 +226,10 @@ Genera entre 2-4 procesos principales, cada uno con 2-3 subprocesos, y cada subp
 
   } catch (error) {
     console.error('Error en analyze-requirements:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Error desconocido',
+        error: errorMessage,
         success: false 
       }),
       { 
