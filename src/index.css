@@ -44,6 +44,18 @@ All colors MUST be HSL.
     --shadow-medium: 0 8px 30px -6px hsl(215 25% 15% / 0.12);
   }
 
+  @keyframes float-slow {
+    0%, 100% {
+      transform: translate(0, 0);
+    }
+    33% {
+      transform: translate(30px, -30px);
+    }
+    66% {
+      transform: translate(-20px, 20px);
+    }
+  }
+
   .dark {
     --background: 215 30% 10%;
     --foreground: 210 30% 95%;
@@ -87,5 +99,11 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .animate-float-slow {
+    animation: float-slow 20s ease-in-out infinite;
   }
 }

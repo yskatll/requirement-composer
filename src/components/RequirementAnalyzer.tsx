@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
 
 interface CasoUso {
   id_caso_uso: number;
@@ -115,8 +116,11 @@ export const RequirementAnalyzer = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-background to-secondary/30 flex flex-col items-center justify-center p-4 md:p-8">
-      <div className="w-full max-w-6xl space-y-8">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 md:p-8 relative">
+      {/* Fondo animado permanente */}
+      <AnimatedBackground />
+      
+      <div className="w-full max-w-6xl space-y-8 relative z-10">
         {/* Header */}
         <div className="text-center space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="flex items-center justify-center gap-2 mb-2">
